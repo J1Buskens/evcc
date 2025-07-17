@@ -8,7 +8,7 @@ on:
 jobs:
   call-build-workflow:
     if: startsWith(github.ref, 'refs/tags')
-    uses: evcc-io/evcc/.github/workflows/default.yml@master
+    uses: J1Buskens/evcc/.github/workflows/default.yml@master
 
   docker:
     name: Publish Docker :release
@@ -104,10 +104,10 @@ jobs:
       - name: Install Cloudsmith CLI
         run: pip install --upgrade cloudsmith-cli
 
-      - name: Publish .deb to Cloudsmith
-        env:
-          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
-        run: make apt-release
+#      - name: Publish .deb to Cloudsmith
+#        env:
+#          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+#        run: make apt-release
 
   demo:
     name: Demo
@@ -131,7 +131,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
         with:
-          repository: evcc-io/hassio-addon
+          repository: J1Buskens/hassio-addon
           token: ${{ secrets.GH_TOKEN }}
           path: ./hassio
 
