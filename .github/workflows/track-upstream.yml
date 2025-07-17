@@ -1,0 +1,63 @@
+name: Sync and Patch EVCC Release
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch-upstream-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout your fork
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/evcc-io/evcc.git
+
+      - name: Fetch latest upstream tags
+        run: git fetch upstream --tags
+
+      - name: Get latest upstream tag
+        id: upstream_tag
+        run: |
+          latest=$(git tag --sort=-creatordate | grep -v '^custom-' | head -n 1)
+          echo "tag=$latest" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists in your fork
+        id: tag_check
+        run: |
+          if git rev-parse "refs/tags/${{ steps.upstream_tag.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Exit if already synced
+        if: steps.tag_check.outputs.exists == 'true'
+        run: echo "Already synced. Exiting."
+
+      - name: Checkout upstream release tag
+        run: |
+          git fetch upstream tag ${{ steps.upstream_tag.outputs.tag }}
+          git checkout -b custom-${{ steps.upstream_tag.outputs.tag }} ${{ steps.upstream_tag.outputs.tag }}
+
+      - name: Apply your custom change
+        run: |
+          # Remove 3-line sponsor authorization block in alfen.go
+          sed -i '/if !sponsor\.IsAuthorized()/,+2d' evcc/charger/alfen.go
+
+      - name: Commit and push patched release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git commit -am "Patched release ${{ steps.upstream_tag.outputs.tag }}"
+          git tag ${{ steps.upstream_tag.outputs.tag }}
+          git push origin custom-${{ steps.upstream_tag.outputs.tag }}
+          git push origin ${{ steps.upstream_tag.outputs.tag }}
