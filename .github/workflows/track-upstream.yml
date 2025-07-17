@@ -60,7 +60,7 @@ jobs:
           git commit -am "Patched release ${{ steps.upstream_tag.outputs.tag }}"
 
           # Push the custom branch
-          git push origin custom-${{ steps.upstream_tag.outputs.tag }}
+          git push -f origin custom-${{ steps.upstream_tag.outputs.tag }}
 
           # Create and push the tag if it doesn't already exist
           if git rev-parse "refs/tags/${{ steps.upstream_tag.outputs.tag }}" >/dev/null 2>&1; then
