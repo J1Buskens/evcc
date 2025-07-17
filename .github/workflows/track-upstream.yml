@@ -81,3 +81,10 @@ jobs:
 
           # Push to master
           git push origin master
+      - name: Trigger Release Workflow
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PAT }}" \
+            https://api.github.com/repos/J1Buskens/evcc/actions/workflows/release.yml/dispatches \
+            -d '{"ref":"master"}'
