@@ -49,7 +49,7 @@ jobs:
       - name: Apply your custom change
         run: |
           # Remove 3-line sponsor authorization block in alfen.go
-          sed -i '/if !sponsor\.IsAuthorized()/,+2d' evcc/charger/alfen.go
+          sed -i '/if !sponsor\.IsAuthorized()/,+2d' charger/alfen.go
 
       - name: Commit and push patched release
         env:
